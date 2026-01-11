@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conector Salud Conectada RD</title>
+    <style>
+        body, html { margin: 0; padding: 0; height: 100%; background: #06080a; color: white; font-family: sans-serif; }
+        #loader { display: flex; justify-content: center; align-items: center; height: 100vh; font-weight: bold; }
+        iframe { border: none; width: 100%; height: 100%; display: none; }
+    </style>
+</head>
+<body>
+
+    <div id="loader">Generando Dashboard en tiempo real...</div>
+    <iframe id="dashboard-frame"></iframe>
+
+    <script>
+        // 1. REEMPLAZA esta URL por tu Webhook de Producción de n8n
+        const WEBHOOK_URL = 'https://n8n.srv961452.hstgr.cloud/webhook/7008165e-7abb-45d0-8a1f-bf70d5febf78';
+
+        async function llamarN8N() {
+            try {
+                const response = await fetch(WEBHOOK_URL);
+                
+                if (!response.ok) throw new Error('Error en la comunicación con n8n');
+                
+                const htmlRecibido = await response.text();
+                
+                // 2. Inyectar el HTML en el iframe para visualizarlo
+                const frame = document.getElementById('dashboard-frame');
+                const loader = document.getElementById('loader');
+                
+                const doc = frame.contentWindow.document;
+                doc.open();
+                doc.write(htmlRecibido);
+                doc.close();
+
+                // 3. Mostrar dashboard y ocultar cargador
+                loader.style.display = 'none';
+                frame.style.display = 'block';
+                
+            } catch (error) {
+                document.getElementById('loader').innerHTML = 
+                    `<span style="color: #f43f5e;">Error: ${error.message}. Asegúrate de que el flujo esté ACTIVO en n8n.</span>`;
+            }
+        }
+
+        // Ejecutar al abrir la página
+        llamarN8N();
+    </script>
+</body>
+</html>
